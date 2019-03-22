@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DecimalInput.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">gone</a> &gt; <a href="index.source.html" class="el_package">numbers</a> &gt; <span class="el_source">DecimalInput.java</span></div><h1>DecimalInput.java</h1><pre class="source lang-java linenums">package numbers;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+/* Validation class for simple decimal numbers (an integer with optional fractional chunk) */
+/* Global Precondition: number is not null nor does it have leading or trailing spaces 
+ */
+<span class="pc bpc" id="L12" title="1 of 2 branches missed.">class DecimalInput {</span>
+
+	private static final char DECIMAL = '.';
+	private static final char PADDING = '_';
+	private static final Set&lt;Character&gt; SIGN_SET;
+	private static final Set&lt;Integer&gt; VALID_CHAR_SET; // int set to match chars IntStreams
+	static { // Setup set of valid signs
+<span class="fc" id="L19">		Set&lt;Character&gt; signs = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L20">		signs.add('-');</span>
+<span class="fc" id="L21">		SIGN_SET = Collections.unmodifiableSet(signs);</span>
+	}
+	static { // Setup set of valid characters in a decimal
+<span class="fc" id="L24">		Set&lt;Character&gt; validChars = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L25">		validChars.add('0');</span>
+<span class="fc" id="L26">		validChars.add('1');</span>
+<span class="fc" id="L27">		validChars.add('2');</span>
+<span class="fc" id="L28">		validChars.add('3');</span>
+<span class="fc" id="L29">		validChars.add('4');</span>
+<span class="fc" id="L30">		validChars.add('5');</span>
+<span class="fc" id="L31">		validChars.add('6');</span>
+<span class="fc" id="L32">		validChars.add('7');</span>
+<span class="fc" id="L33">		validChars.add('8');</span>
+<span class="fc" id="L34">		validChars.add('9');</span>
+<span class="fc" id="L35">		validChars.add(DECIMAL);</span>
+<span class="fc" id="L36">		validChars.add(PADDING);</span>
+<span class="fc" id="L37">		VALID_CHAR_SET = Collections.unmodifiableSet(validChars</span>
+<span class="fc" id="L38">				.stream()</span>
+<span class="fc" id="L39">				.mapToInt(Character::charValue)</span>
+<span class="fc" id="L40">				.mapToObj(Integer::valueOf)</span>
+<span class="fc" id="L41">				.collect(Collectors.toSet()));</span>
+<span class="fc" id="L42">	}</span>
+
+	private final boolean isPositive;
+	private final String number;
+	
+<span class="fc" id="L47">	DecimalInput (String number) {</span>
+<span class="pc bpc" id="L48" title="3 of 4 branches missed.">		assert number != null : &quot;Number given should not be null.&quot;;</span>
+<span class="pc bpc" id="L49" title="3 of 4 branches missed.">		assert number.trim().equals(number) </span>
+				: &quot;Number given should not have leading or trailing whitespace: \&quot;&quot;+number+&quot;\&quot;&quot;;
+<span class="fc" id="L51">		this.isPositive = isNumberPositive(number);</span>
+<span class="fc" id="L52">		this.number = removeSign(number);</span>
+<span class="fc" id="L53">	}</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">	public String toString() { return (isPositive ? &quot;+&quot; : &quot;-&quot;)+removePadding(number); }</span>
+	
+<span class="nc" id="L57">	boolean isInteger() { return isNotWithinString(DECIMAL,number); }</span>
+	
+<span class="nc bnc" id="L59" title="All 6 branches missed.">	boolean isValid() { return hasValidChars() &amp;&amp; hasValidDecimalPoint() &amp;&amp; hasValidPadding(); }</span>
+
+<span class="nc" id="L61">	private boolean hasValidChars() { return number.chars().allMatch(VALID_CHAR_SET::contains); }</span>
+
+	/* A number is considered to have a valid decimal point if none exist, or only one
+	 * exists that splits the string into two further numbers.
+	 */
+	private boolean hasValidDecimalPoint() {
+<span class="nc" id="L67">		String[] numbers = getAllChunks();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		return numbers.length &lt;= 2 </span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">				&amp;&amp; !numbers[0].isEmpty()</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">				&amp;&amp; !numbers[1].isEmpty();</span>
+	}
+
+	/* A number is considered to have valid padding if they only appear 
+	 * in the place of a comma in the leading number.
+	 */
+	private boolean hasValidPadding() {
+<span class="nc" id="L77">		String[] numbers = getAllChunks();</span>
+<span class="nc bnc" id="L78" title="All 4 branches missed.">		return (numbers.length == 2 ? isNotWithinString(PADDING,numbers[1]) : false) </span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">				&amp;&amp; hasValidLeadingPadding(numbers[0]);</span>
+	}
+	
+<span class="nc" id="L82">	private String[] getAllChunks() { return number.split(getRegexOf(DECIMAL)); }</span>
+	
+	private static boolean hasValidLeadingPadding(String leading) {
+<span class="nc bnc" id="L85" title="All 4 branches missed.">		return hasNoEdgePadding(leading) &amp;&amp; hasValidMiddlePadding(leading);</span>
+	}
+	
+	private static boolean hasNoEdgePadding(String leading) {
+<span class="nc bnc" id="L89" title="All 4 branches missed.">		return leading.charAt(0) != PADDING &amp;&amp; leading.charAt(leading.length()-1) != PADDING;</span>
+	}
+	
+	private static boolean hasValidMiddlePadding(String leading) {
+		/* The padding (underscores) in the middle of a decimal are valid when 
+		 * followed by a multiple of three digits
+		 * 
+		 * ex: 1_234, 1__234 =&gt; true
+		 *     12_34, _1_234 =&gt; false
+		 */
+<span class="fc" id="L99">		final AtomicInteger digitCount = new AtomicInteger();</span>
+<span class="fc" id="L100">		return new StringBuilder(leading)</span>
+<span class="fc" id="L101">				.reverse()</span>
+<span class="fc" id="L102">				.chars()</span>
+<span class="fc" id="L103">				.peek(i -&gt; digitCount.incrementAndGet())</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">				.filter(i -&gt; PADDING == (char)i)</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">				.noneMatch(i -&gt; digitCount.get() % 3 == 0);</span>
+	}
+	
+<span class="nc" id="L108">	private static String removePadding(String number) { return number.replaceAll(getRegexOf(PADDING), &quot;&quot;); }</span>
+	
+	private static String removeSign(String number) {
+<span class="pc bpc" id="L111" title="3 of 4 branches missed.">		return number.isEmpty() || !SIGN_SET.contains(number.charAt(0)) ? number</span>
+<span class="nc" id="L112">				: number.substring(1, number.length());</span>
+	}
+	
+	private static boolean isNumberPositive(String number) {
+<span class="pc bpc" id="L116" title="3 of 4 branches missed.">		return !number.isEmpty() &amp;&amp; number.charAt(0) == '+';</span>
+	}
+	
+<span class="nc bnc" id="L119" title="All 2 branches missed.">	private static boolean isNotWithinString (char c, String str) { return str.indexOf(c) &lt; 0; }</span>
+	
+<span class="nc" id="L121">	private static String getRegexOf(char ch) { return &quot;&quot;+ch; }</span>
+	
+	class TestHook {
+		boolean hasValidMiddlePadding(String leading) { 
+			return DecimalInput.hasValidMiddlePadding(leading); 
+		}
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.3.201901230119</span></div></body></html>
